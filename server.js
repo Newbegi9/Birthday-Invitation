@@ -133,14 +133,24 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Expose public base URL so admin can generate shareable guest links (ngrok or null)
+let PUBLIC_BASE_URL = null;
+app.get('/api/public-url', (req, res) => {
+    res.json({ baseUrl: PUBLIC_BASE_URL });
+});
+
 app.listen(PORT, async () => {
     console.log(`\n🎉 Birthday RSVP App running locally at http://localhost:${PORT}`);
     console.log(`🔐 Admin PIN: ${ADMIN_PIN}`);
     console.log(`\n⏳ Opening ngrok tunnel...`);
 
     try {
-        const listener = await ngrok.forward({ addr: PORT });
+        const listener = await ngrok.forward({
+            addr: PORT,
+            authtoken_from_env: true
+        });
         const url = listener.url();
+        PUBLIC_BASE_URL = url;
         console.log(`\n✅ Public URL ready! (no password needed for guests)`);
         console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
         console.log(`🌐 PUBLIC URL  : ${url}`);

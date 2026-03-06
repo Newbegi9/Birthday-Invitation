@@ -490,6 +490,8 @@
 
         // ---- PIN Auth ----
         let adminPin = '';
+        let baseUrlForLinks = ''; // Public URL for guest links (set after PIN + fetch)
+
         function checkPin() {
             const pin = document.getElementById('pinInput').value;
             const errEl = document.getElementById('pinError');
@@ -505,7 +507,7 @@
                     } else {
                         document.getElementById('pinGate').style.display = 'none';
                         document.getElementById('adminDashboard').style.display = 'block';
-                        loadData();
+                        fetchBaseUrl().then(() => loadData());
                     }
                 })
                 .catch(() => { errEl.textContent = 'Connection error.'; });
@@ -519,6 +521,16 @@
         }
 
         // ---- API helpers ----
+        async function fetchBaseUrl() {
+            try {
+                const r = await fetch('/api/public-url');
+                const data = await r.json();
+                baseUrlForLinks = (data.baseUrl && data.baseUrl.replace(/\/$/, '')) || window.location.origin;
+            } catch {
+                baseUrlForLinks = window.location.origin;
+            }
+        }
+
         function apiFetch(url, opts = {}) {
             return fetch(url, {
                 ...opts,
@@ -555,7 +567,7 @@
             }
 
             const rows = guests.map(g => {
-                const link = `${window.location.origin}/?token=${g.token}`;
+                const link = `${baseUrlForLinks || window.location.origin}/?token=${g.token}`;
                 const badge = g.rsvp === 'yes'
                     ? `<span class="badge badge-yes">✅ Yes</span>`
                     : g.rsvp === 'no'
@@ -608,7 +620,7 @@
                 const guest = await res.json();
                 if (!res.ok) { showToast(guest.error || 'Failed to add guest.'); return; }
 
-                const link = `${window.location.origin}/?token=${guest.token}`;
+                const link = `${baseUrlForLinks || window.location.origin}/?token=${guest.token}`;
                 newGuestLink = link;
                 document.getElementById('newGuestLabel').textContent = guest.name;
                 document.getElementById('generatedLink').textContent = link;
