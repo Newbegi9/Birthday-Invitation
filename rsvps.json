@@ -1,0 +1,18 @@
+{
+  "guests": [
+    {
+      "token": "e6c9acb3-f8d5-4dd8-82ec-8c5cdecbeab5",
+      "name": "Ashish",
+      "rsvp": null,
+      "respondedAt": null,
+      "createdAt": "2026-03-04T06:00:35.845Z"
+    },
+    {
+      "token": "19eade65-bfc2-4870-a5e9-85236ea9d9d8",
+      "name": "Alice",
+      "rsvp": "yes",
+      "respondedAt": "2026-03-04T06:00:49.392Z",
+      "createdAt": "2026-03-04T06:00:47.811Z"
+    }
+  ]
+}
