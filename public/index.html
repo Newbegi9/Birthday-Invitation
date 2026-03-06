@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're Invited! 🎉</title>
+  <meta name="description" content="You've received a special birthday party invitation. RSVP now!" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .invite-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .invite-container {
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Invite Card */
+    .invite-image-wrapper {
+      position: relative;
+      border-radius: calc(var(--radius) + 4px);
+      overflow: hidden;
+      margin-bottom: 2rem;
+      border: 2px solid rgba(240,192,96,0.4);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(240,192,96,0.15);
+      animation: fadeUp 0.7s ease forwards;
+    }
+    .invite-image-wrapper img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Guest greeting */
+    .greeting {
+      animation: fadeUp 0.6s ease 0.2s forwards;
+      opacity: 0;
+      margin-bottom: 0.5rem;
+    }
+    .greeting h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+    }
+    .greeting p {
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    /* RSVP Section */
+    .rsvp-section {
+      animation: fadeUp 0.6s ease 0.4s forwards;
+      opacity: 0;
+      margin-top: 2rem;
+    }
+    .rsvp-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      font-weight: 500;
+    }
+    .rsvp-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .rsvp-buttons .btn {
+      flex: 1;
+      max-width: 200px;
+      font-size: 1.15rem;
+      padding: 1rem 2rem;
+    }
+    .btn-yes .icon, .btn-no .icon { font-size: 1.3rem; }
+
+    /* Confirmation State */
+    .confirmation {
+      display: none;
+      animation: fadeUp 0.5s ease forwards;
+    }
+    .confirmation .icon-big {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+    .confirmation h2 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .confirmation p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Error State */
+    .error-state {
+      display: none;
+      padding: 3rem 2rem;
+    }
+    .error-state .icon-big { font-size: 4rem; display: block; margin-bottom: 1rem; }
+    .error-state h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .error-state p { color: var(--muted); font-size: 0.9rem; }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 4rem 2rem;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(240,192,96,0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay p { color: var(--muted); font-size: 0.9rem; }
+
+    /* Already responded */
+    .already-responded {
+      background: rgba(240,192,96,0.06);
+      border: 1px solid rgba(240,192,96,0.2);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .already-responded strong { color: var(--gold-light); }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  <main class="invite-page">
+    <div class="invite-container">
+
+      <!-- Loading State -->
+      <div class="card" id="loadingState">
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <p>Loading your invitation…</p>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="card error-state" id="errorState">
+        <span class="icon-big">🚫</span>
+        <h2>Invalid Invite Link</h2>
+        <p id="errorMsg">This invitation link is not valid or has expired.<br>Please contact the host for a new link.</p>
+      </div>
+
+      <!-- Invite Content (shown after valid token) -->
+      <div id="inviteContent" style="display:none;">
+        <div class="invite-image-wrapper glow-pulse">
+          <img src="invite-image.png" alt="Birthday Party Invitation" />
+        </div>
+
+        <div class="card">
+          <!-- Guest Greeting -->
+          <div class="greeting">
+            <h1>Hey <span class="gold-text" id="guestName">Friend</span>! 🎉</h1>
+            <p>You're personally invited to celebrate a very special day.</p>
+          </div>
+
+          <hr class="divider" />
+
+          <!-- RSVP Buttons -->
+          <div class="rsvp-section" id="rsvpSection">
+            <p class="rsvp-label">Will you be joining us?</p>
+            <div class="rsvp-buttons">
+              <button class="btn btn-yes" id="btnYes" onclick="submitRSVP('yes')">
+                <span class="icon">🥳</span> Yes, I'll be there!
+              </button>
+              <button class="btn btn-no" id="btnNo" onclick="submitRSVP('no')">
+                <span class="icon">😢</span> Can't make it
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirmation (hidden initially) -->
+          <div class="confirmation" id="confirmationSection">
+            <span class="icon-big" id="confirmIcon">🎊</span>
+            <h2 id="confirmTitle">See you there!</h2>
+            <p id="confirmMsg">Your RSVP has been recorded. We can't wait to celebrate with you!</p>
+          </div>
+
+          <!-- Already responded notice -->
+          <div class="already-responded" id="alreadyResponded" style="display:none;">
+            <strong>You've already responded to this invite.</strong><br>
+            Your answer has been saved and cannot be changed.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Particle system ----
+    const particlesEl = document.getElementById('particles');
+    const colors = ['#f0c060', '#e879a0', '#c026d3', '#fde68a', '#ffffff'];
+    for (let i = 0; i < 35; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 5 + 2;
+      p.style.cssText = `
+        width:${size}px; height:${size}px;
+        left:${Math.random()*100}%;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        animation-duration:${6+Math.random()*12}s;
+        animation-delay:${Math.random()*10}s;
+        opacity:0;
+      `;
+      particlesEl.appendChild(p);
+    }
+
+    // ---- Toast ----
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // ---- Get token from URL ----
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    // ---- Load invite ----
+    async function loadInvite() {
+      if (!token) {
+        showState('error', 'No invite token found in this link.');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/invite/${token}`);
+        const data = await res.json();
+        if (!res.ok) {
+          showState('error', data.error || 'Invalid invite link.');
+          return;
+        }
+        // Show content
+        document.getElementById('guestName').textContent = data.name;
+        document.getElementById('inviteContent').style.display = 'block';
+        document.getElementById('loadingState').style.display = 'none';
+
+        if (data.rsvp !== null) {
+          showAlreadyResponded(data.rsvp);
+        }
+      } catch (err) {
+        showState('error', 'Could not connect to the server. Please try again.');
+      }
+    }
+
+    function showState(state, msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      if (state === 'error') {
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorMsg').textContent = msg;
+      }
+    }
+
+    function showAlreadyResponded(rsvp) {
+      document.getElementById('rsvpSection').style.display = 'none';
+      document.getElementById('alreadyResponded').style.display = 'block';
+      showConfirmation(rsvp);
+    }
+
+    function showConfirmation(rsvp) {
+      const section = document.getElementById('confirmationSection');
+      section.style.display = 'block';
+      if (rsvp === 'yes') {
+        document.getElementById('confirmIcon').textContent = '🎊';
+        document.getElementById('confirmTitle').textContent = "You're coming! 🥳";
+        document.getElementById('confirmMsg').textContent = "Your RSVP is confirmed. We're so excited to celebrate with you!";
+      } else {
+        document.getElementById('confirmIcon').textContent = '💌';
+        document.getElementById('confirmTitle').textContent = "We'll miss you! 💛";
+        document.getElementById('confirmMsg').textContent = "Thanks for letting us know. You'll be missed at the party!";
+      }
+    }
+
+    // ---- Submit RSVP ----
+    async function submitRSVP(response) {
+      const btnYes = document.getElementById('btnYes');
+      const btnNo  = document.getElementById('btnNo');
+      btnYes.disabled = true; btnNo.disabled = true;
+      btnYes.style.opacity = '0.6'; btnNo.style.opacity = '0.6';
+
+      try {
+        const res = await fetch('/api/rsvp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, response })
+        });
+        const data = await res.json();
+
+        if (res.status === 409) {
+          // Already responded
+          showAlreadyResponded(data.rsvp);
+          document.getElementById('rsvpSection').style.display = 'none';
+          showToast('You have already submitted your RSVP.');
+          return;
+        }
+        if (!res.ok) {
+          showToast(data.error || 'Something went wrong. Please try again.');
+          btnYes.disabled = false; btnNo.disabled = false;
+          btnYes.style.opacity = '1'; btnNo.style.opacity = '1';
+          return;
+        }
+
+        // Success — hide buttons, show confirmation
+        document.getElementById('rsvpSection').style.display = 'none';
+        showConfirmation(response);
+        showToast(response === 'yes' ? '🎉 See you at the party!' : '💌 Response recorded!');
+
+        // Confetti burst for yes
+        if (response === 'yes') launchConfetti();
+
+      } catch (err) {
+        showToast('Connection error. Please try again.');
+        btnYes.disabled = false; btnNo.disabled = false;
+        btnYes.style.opacity = '1'; btnNo.style.opacity = '1';
+      }
+    }
+
+    // ---- Confetti ----
+    function launchConfetti() {
+      const el = document.getElementById('inviteContent');
+      const emojis = ['🎊','🎉','✨','🥳','🎈','⭐','💫'];
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const c = document.createElement('span');
+          c.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+          c.style.cssText = `
+            position:fixed;
+            left:${Math.random()*100}%;
+            top:-30px;
+            font-size:${1.2+Math.random()*1.5}rem;
+            animation: confetti-drop ${1.2+Math.random()*1}s ease forwards;
+            z-index:999;
+            pointer-events:none;
+          `;
+          document.body.appendChild(c);
+          setTimeout(() => c.remove(), 2500);
+        }, i * 80);
+      }
+    }
+
+    loadInvite();
+  </script>
+</body>
+</html>

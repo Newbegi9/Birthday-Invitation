@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎉 RSVP Dashboard – Birthday Party</title>
+    <meta name="description" content="Admin dashboard to manage and track birthday party RSVPs." />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .admin-page {
+            min-height: 100vh;
+            padding: 2.5rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-wrap {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ---- PIN Gate ---- */
+        #pinGate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .pin-card {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .pin-card .lock-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .pin-card h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pin-card p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .pin-input-wrap {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .pin-error {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            height: 1.2em;
+            transition: opacity 0.2s;
+        }
+
+        /* ---- Header ---- */
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+        }
+
+        .admin-header .subtitle {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 0.15rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--muted);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--rose);
+            color: var(--rose);
+        }
+
+        /* ---- Stats Grid ---- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-count.gold {
+            color: var(--gold);
+        }
+
+        .stat-count.green {
+            color: #4ade80;
+        }
+
+        .stat-count.red {
+            color: #f87171;
+        }
+
+        .stat-count.muted {
+            color: var(--muted);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ---- Add Guest ---- */
+        .add-guest-card {
+            margin-bottom: 2rem;
+        }
+
+        .add-guest-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .add-form .input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .add-form .btn {
+            white-space: nowrap;
+        }
+
+        /* Generated Link Box */
+        .link-box {
+            display: none;
+            margin-top: 1.25rem;
+            background: rgba(240, 192, 96, 0.06);
+            border: 1px solid rgba(240, 192, 96, 0.25);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+        }
+
+        .link-box.show {
+            display: block;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .link-box label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .link-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            align-items: center;
+        }
+
+        .link-row .link-text {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.6rem 0.85rem;
+            font-size: 0.82rem;
+            color: var(--gold-light);
+            font-family: monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .copy-btn {
+            background: rgba(240, 192, 96, 0.15);
+            border: 1px solid rgba(240, 192, 96, 0.3);
+            color: var(--gold);
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(240, 192, 96, 0.25);
+        }
+
+        /* ---- Guest Table ---- */
+        .guests-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--muted);
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 0 1rem 0.75rem;
+        }
+
+        th:last-child {
+            text-align: right;
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .guest-name {
+            font-weight: 500;
+        }
+
+        .guest-date {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 0.15rem;
+        }
+
+        td .link-mini {
+            font-size: 0.78rem;
+            color: var(--gold-light);
+            font-family: monospace;
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+            vertical-align: middle;
+            cursor: pointer;
+        }
+
+        td .copy-mini {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            transition: color 0.2s;
+        }
+
+        td .copy-mini:hover {
+            color: var(--gold);
+        }
+
+        .delete-btn {
+            background: none;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            border-radius: 8px;
+            padding: 0.35rem 0.65rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #f87171;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--muted);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles" id="particles"></div>
+
+    <!-- PIN Gate -->
+    <div id="pinGate">
+        <div class="card pin-card fade-up">
+            <span class="lock-icon">🎂</span>
+            <h1>Admin <span class="gold-text">Dashboard</span></h1>
+            <p>Enter your admin PIN to manage RSVPs</p>
+            <div class="pin-input-wrap">
+                <input class="input" type="password" id="pinInput" placeholder="Enter PIN" maxlength="20"
+                    onkeydown="if(event.key==='Enter') checkPin()" />
+                <button class="btn btn-gold" onclick="checkPin()" id="pinBtn">Enter</button>
+            </div>
+            <div class="pin-error" id="pinError"></div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (hidden until PIN ok) -->
+    <div class="admin-page" id="adminDashboard" style="display:none;">
+        <div class="admin-wrap">
+
+            <!-- Header -->
+            <div class="admin-header fade-up">
+                <div>
+                    <h1>🎉 Birthday <span class="gold-text">RSVP</span> Tracker</h1>
+                    <p class="subtitle">Manage guests and track responses</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">🔒 Lock</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid fade-up" id="statsGrid">
+                <div class="stat-card">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-count gold" id="statTotal">–</div>
+                    <div class="stat-label">Total Invited</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-count green" id="statYes">–</div>
+                    <div class="stat-label">Coming</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">❌</span>
+                    <div class="stat-count red" id="statNo">–</div>
+                    <div class="stat-label">Can't Make It</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⏳</span>
+                    <div class="stat-count muted" id="statPending">–</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+
+            <!-- Add Guest -->
+            <div class="card add-guest-card fade-up">
+                <h2>➕ Add Guest</h2>
+                <div class="add-form">
+                    <input class="input" type="text" id="guestNameInput" placeholder="Guest name…" maxlength="60"
+                        onkeydown="if(event.key==='Enter') addGuest()" />
+                    <button class="btn btn-gold" onclick="addGuest()" id="addBtn">Generate Invite Link</button>
+                </div>
+
+                <!-- New link box (shown after adding) -->
+                <div class="link-box" id="linkBox">
+                    <label>🔗 Shareable Invite Link for <strong id="newGuestLabel">—</strong></label>
+                    <div class="link-row">
+                        <span class="link-text" id="generatedLink"></span>
+                        <button class="copy-btn" onclick="copyNewLink()">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guest List -->
+            <div class="card guests-card fade-up">
+                <h2>
+                    Guest List
+                    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+                </h2>
+
+                <div class="table-wrap" id="guestListWrap">
+                    <div class="empty-state">
+                        <span class="spinner" style="display:inline-block;margin-bottom:0.75rem;"></span>
+                        <p>Loading…</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ---- Particles ----
+        const pEl = document.getElementById('particles');
+        const cols = ['#f0c060', '#e879a0', '#c026d3', '#fde68a', '#fff'];
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const sz = Math.random() * 4 + 2;
+            p.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;background:${cols[Math.floor(Math.random() * cols.length)]};animation-duration:${8 + Math.random() * 10}s;animation-delay:${Math.random() * 8}s;`;
+            pEl.appendChild(p);
+        }
+
+        // ---- Toast ----
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // ---- PIN Auth ----
+        let adminPin = '';
+        function checkPin() {
+            const pin = document.getElementById('pinInput').value;
+            const errEl = document.getElementById('pinError');
+            if (!pin) { errEl.textContent = 'Please enter a PIN.'; return; }
+            adminPin = pin;
+            // Verify by hitting a protected endpoint
+            fetch('/api/admin/stats', { headers: { 'x-admin-pin': pin } })
+                .then(r => {
+                    if (r.status === 401) {
+                        errEl.textContent = 'Incorrect PIN. Please try again.';
+                        document.getElementById('pinInput').value = '';
+                        adminPin = '';
+                    } else {
+                        document.getElementById('pinGate').style.display = 'none';
+                        document.getElementById('adminDashboard').style.display = 'block';
+                        loadData();
+                    }
+                })
+                .catch(() => { errEl.textContent = 'Connection error.'; });
+        }
+        function logout() {
+            adminPin = '';
+            document.getElementById('pinGate').style.display = 'flex';
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinError').textContent = '';
+        }
+
+        // ---- API helpers ----
+        function apiFetch(url, opts = {}) {
+            return fetch(url, {
+                ...opts,
+                headers: { 'x-admin-pin': adminPin, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+            });
+        }
+
+        // ---- Load stats + guests ----
+        async function loadData() {
+            try {
+                const [statsRes, guestsRes] = await Promise.all([
+                    apiFetch('/api/admin/stats'),
+                    apiFetch('/api/admin/guests')
+                ]);
+                const stats = await statsRes.json();
+                const guests = await guestsRes.json();
+
+                document.getElementById('statTotal').textContent = stats.total ?? '–';
+                document.getElementById('statYes').textContent = stats.yes ?? '–';
+                document.getElementById('statNo').textContent = stats.no ?? '–';
+                document.getElementById('statPending').textContent = stats.pending ?? '–';
+
+                renderGuestTable(guests);
+            } catch {
+                showToast('❌ Failed to load data.');
+            }
+        }
+
+        function renderGuestTable(guests) {
+            const wrap = document.getElementById('guestListWrap');
+            if (!guests.length) {
+                wrap.innerHTML = `<div class="empty-state"><span class="icon">🎈</span><p>No guests added yet. Add your first guest above!</p></div>`;
+                return;
+            }
+
+            const rows = guests.map(g => {
+                const link = `${window.location.origin}/?token=${g.token}`;
+                const badge = g.rsvp === 'yes'
+                    ? `<span class="badge badge-yes">✅ Yes</span>`
+                    : g.rsvp === 'no'
+                        ? `<span class="badge badge-no">❌ No</span>`
+                        : `<span class="badge badge-pending">⏳ Pending</span>`;
+                const respondedDate = g.respondedAt
+                    ? `<div class="guest-date">Responded: ${new Date(g.respondedAt).toLocaleString()}</div>` : '';
+                return `<tr>
+          <td>
+            <div class="guest-name">${escHtml(g.name)}</div>
+            <div class="guest-date">Added: ${new Date(g.createdAt).toLocaleDateString()}</div>
+            ${respondedDate}
+          </td>
+          <td>${badge}</td>
+          <td>
+            <span class="link-mini" title="${link}" onclick="copyLink('${link}', this)">${link}</span>
+            <button class="copy-mini" onclick="copyLink('${link}')" title="Copy link">📋</button>
+          </td>
+          <td style="text-align:right;">
+            <button class="delete-btn" onclick="deleteGuest('${g.token}', '${escHtml(g.name)}')">🗑</button>
+          </td>
+        </tr>`;
+            }).join('');
+
+            wrap.innerHTML = `<table>
+        <thead><tr>
+          <th>Guest</th><th>RSVP</th><th>Invite Link</th><th style="text-align:right;">Remove</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ---- Add guest ----
+        let newGuestLink = '';
+        async function addGuest() {
+            const nameEl = document.getElementById('guestNameInput');
+            const name = nameEl.value.trim();
+            if (!name) { showToast('Please enter a guest name.'); nameEl.focus(); return; }
+
+            document.getElementById('addBtn').disabled = true;
+            try {
+                const res = await apiFetch('/api/admin/guests', {
+                    method: 'POST',
+                    body: JSON.stringify({ name })
+                });
+                const guest = await res.json();
+                if (!res.ok) { showToast(guest.error || 'Failed to add guest.'); return; }
+
+                const link = `${window.location.origin}/?token=${guest.token}`;
+                newGuestLink = link;
+                document.getElementById('newGuestLabel').textContent = guest.name;
+                document.getElementById('generatedLink').textContent = link;
+                document.getElementById('linkBox').classList.add('show');
+                nameEl.value = '';
+                showToast(`✅ ${guest.name} added!`);
+                loadData();
+            } catch {
+                showToast('Connection error.');
+            } finally {
+                document.getElementById('addBtn').disabled = false;
+            }
+        }
+
+        function copyNewLink() {
+            navigator.clipboard.writeText(newGuestLink).then(() => showToast('📋 Link copied!'));
+        }
+        function copyLink(link) {
+            navigator.clipboard.writeText(link).then(() => showToast('📋 Link copied!'));
+        }
+
+        // ---- Delete guest ----
+        async function deleteGuest(token, name) {
+            if (!confirm(`Remove ${name} from the guest list?`)) return;
+            try {
+                const res = await apiFetch(`/api/admin/guests/${token}`, { method: 'DELETE' });
+                if (res.ok) { showToast(`🗑 ${name} removed.`); loadData(); }
+                else showToast('Failed to delete guest.');
+            } catch { showToast('Connection error.'); }
+        }
+    </script>
+</body>
+
+</html>
