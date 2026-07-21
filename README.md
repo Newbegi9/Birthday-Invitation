@@ -76,13 +76,13 @@ The project includes `@ngrok/ngrok`, which can tunnel your local server to a pub
 
 - [ ] Host-facing dashboard to view/filter RSVPs in the UI
 - [ ] Move storage from a flat JSON file to a lightweight database
-- [ ] Email or SMS confirmation for guests after they RSVP
-- [ ] One-click deploy option instead of relying on an ngrok tunnel
+- [ ] Calendar reminder
 
 ## Contributing
 
 This started as a personal project for a birthday — feel free to fork it and adapt it for your own event.
 
-## License
+## Built using ChatGPT and Antigravity
+
 
 No license has been specified yet. If you plan to share this publicly, consider adding one (MIT is a common, permissive choice for small projects like this).
